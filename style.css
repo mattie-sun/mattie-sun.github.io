@@ -71,3 +71,8 @@ h2 {
 .assignment p {
   margin-top: 0.5em;
 }
+
+.pfimg {
+    max-width:300px;
+   max-height:300px;
+}
