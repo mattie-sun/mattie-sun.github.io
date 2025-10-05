@@ -4,15 +4,142 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
 
-    <title>Example Student's HCDE 439 Physical Computing Page!</title>
+    <title>Assignment 1: Blink!</title>
 
     <link href="style.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <h1>Example Student's Assignment 1!</h1>
+    <h1>Assignment 1: Blink!</h1>
     <div class="header">
-      <img src="red-panda.jpg" />
-      <p>Here is all the documentation for assignment 1!</p>
+        <p>The goal of this assignment was to build and code a circuit with a minimum of 3 LEDs blinking independently.</p>
     </div>
+
+
+    <div class="section">
+        <h2>Schematic</h2>
+        <img src="/images/Group%201.png" alt="arduino schematic for pins 11, 12, and 13 powering a red, blue and yellow LED respectively.">
+        <div class="caption">Circuit schematic connecting pins 11 - 13 to  their corresponding LEDs. Each individual circuit has a 5v power source and its necessary resistor.</div>
+    </div>
+
+    <div class="section">
+        <h2>Final Circuit</h2>
+        <img src="images/Screenshot 2025-10-05 at 2.50.44 PM.png">
+        <div class="caption">Built circuit made via the schematic.</div>
+    </div>
+
+    <div class="section">
+        <h2>Voltage Calculations</h2>
+        <div class="flex-container">
+            <div class="column">
+                <p>
+                    <strong>Yellow & Red LEDs:</strong><br>
+                    V = 5, Vdrop = 1.8, I = 20mA<br>
+                    5 - 1.8v = 20mA x Ω<br>
+                    3.2v = 20mA x Ω<br>
+                    3.2v / 20mA = Ω<br>
+                    <br>
+                    160 = Ω
+                </p>
+            </div>
+
+
+        <div class="column">
+            <p>
+                <strong>Blue LED:</strong><br>
+                V = 5, Vdrop = 3.3, I = 20mA<br>
+                5 - 3.3v = 20mA x Ω<br>
+                1.7v = 20mA x Ω<br>
+                1.7v / 20mA = Ω<br>
+                <br>
+                85 = Ω
+            </p>
+        </div>
+    </div>
+    </div>
+
+    <div class="section">
+      <h2>Code</h2>
+      <pre>
+        <code>
+          void setup() {
+              pinMode(13, OUTPUT);          //Setting pin 13 to output to an LED
+              pinMode(12, OUTPUT);          //Setting pin 12 to output to an LED
+              pinMode(11, OUTPUT);          //Setting pin 11 to output to an LED
+          }
+
+          int i = 0;                        //Initializing a counter for the program loop
+
+          void loop() {
+              while(i < 10) {               //Program loop set to run while i < 10
+                delay(500);                 //Adding a .5s delay
+                digitalWrite(11, HIGH);     //Turning pin 11 on
+                digitalWrite(12, LOW);      //Turning pin 12 off
+                delay(500);                 //Waiting for 0.5s before changing the pins
+                digitalWrite(12, HIGH);     //Turning pin 12 on
+                digitalWrite(13, LOW);      //Turning pin 13 off
+                delay(500);                 //Waiting for 0.5s before changing the pins
+                digitalWrite(13, HIGH);     //Turning pin 13 on
+                digitalWrite(11, LOW);      //Turning pin 11 off
+                i++;                        //Incrementing the counter
+              }
+
+              delay(500);                   //Initializing a counter for the program loop
+              digitalWrite(11, LOW);        //Turning pin 11 off
+              digitalWrite(12, LOW);        //Turning pin 12 off
+              digitalWrite(13, LOW);        //Turning pin 13 off
+          }
+        </code>
+      </pre>
+    </div>
+
+  <div class="section">
+      <h2>Circuit Function</h2>
+      <img src="/images/tinywow_IMG_1314_84758310.gif" />
+
+      <div class="caption">
+          Completed circuit blinking one LED off at a time.
+      </div>
+  </div>
+
+  <div>
+      <h2>Questions</h2>
+      <div class="question">
+          <strong>Q1:</strong> Draw a graph where the X axis is time and the Y axis is voltage across the LEDs. Draw a line for each of your 3 LEDs.
+          <div>
+              <div class="graph">
+                  <div class="graph">
+                      <img src="images/Screenshot 2025-10-02 at 5.24.52 PM.png">
+                  </div>
+                  <div class="graph">
+                      <img src="images/Screenshot 2025-10-02 at 5.24.59 PM.png">
+                  </div>
+                  <div>
+                      <img src="images/Screenshot 2025-10-02 at 5.25.12 PM.png">
+                  </div>
+              </div>
+              <div class="caption">Graphs for each LED's voltage over time.</div>
+          </div>
+      </div>
+
+      <div class="question">
+          <strong>Q2:</strong> How many LEDs could you blink independently with your Arduino? How much current would that draw?
+          <br>
+          <strong>A:</strong> The max number of LEDs that I was able to control with the arduino was 12. This is because there are only 12 digital ports on the arduino.
+      </div>
+      <div class="question">
+          <strong>Q4:</strong> How fast do you need to blink your LEDs until you no longer can tell that they are blinking?
+          <br>
+          <strong>A:</strong> I had to set the delay time to 12ms for the blinking of the LED to be discernible.
+      </div>
+      <div class="question">
+          <strong>Q5:</strong>  Did you use AI tools in completing this assignment? If yes, please provide details on how/when, as well as a brief reflection. If no, you can either leave this question blank, or provide other information if you'd like.
+          <br>
+          <strong>A:</strong> I used AI tools to help me format some of the items in this documentation. Specifically, I googled the way I wanted something formatted and if an AI summary that sounded similar to what I was looking for came up, I would look at it and take the parts of the code that it gave me that I needed to use. Strangely, it felt pretty good to use AI this way, because I didn't feel like I was being given the answers and instead could read and understand what it was giving me, and take from there.
+
+      </div>
+
+
+  </div>
+
   </body>
 </html>

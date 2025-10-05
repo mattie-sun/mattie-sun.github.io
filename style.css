@@ -72,7 +72,51 @@ h2 {
   margin-top: 0.5em;
 }
 
-.pfimg {
-    max-width:300px;
-   max-height:300px;
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
 }
+
+.column {
+    flex: 1;
+    padding: 15px;
+}
+
+pre {
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  padding: 15px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+code {
+  font-family: "Courier New", Courier;
+  color: #333;
+
+}
+
+.header {
+  padding-bottom: 30px
+}
+
+.section {
+    padding-bottom: 40px
+}
+
+.graph {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.question {
+    padding-bottom: 40px;
+}
+
+.caption {
+    font-size: 12px;
+    padding-top:10px;
+}
+
