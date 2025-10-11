@@ -9,10 +9,177 @@
     <link href="style.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <h1>Example Student's Assignment 2!</h1>
+    <h1>Assignment 2: Fade</h1>
     <div class="header">
-      <img src="red-panda.jpg" />
-      <p>Here is all the documentation for assignment 2!</p>
+      <p>The goal of this assignment was to build and code a circuit with a minimum of 3 LEDs fading in or out, initiated by some sort of input. </p>
+    </div>
+
+
+    <div class="section">
+      <h2>Schematic</h2>
+      <img src="images/Group 2.png">
+      <div class="caption">Circuit schematic connecting pins 9 - 11 to  their corresponding LEDs and to the switch. Each individual circuit has a 5v power source and its necessary who's value is calculated below. </div>
+    </div>
+
+    <div class="section">
+      <h2>Voltage Calculations</h2>
+      <div class="flex-container">
+        <div class="column">
+          <p>
+            <strong>Yellow & Red LEDs:</strong><br>
+            V = 5, Vdrop = 1.8, I = 20mA<br>
+            5 - 1.8v = 20mA x Ω<br>
+            3.2v = 20mA x Ω<br>
+            3.2v / 20mA = Ω<br>
+            <br>
+            160 = Ω
+          </p>
+        </div>
+
+        <div class="column">
+          <p>
+            <strong>Blue LED:</strong><br>
+            V = 5, Vdrop = 3.3, I = 20mA<br>
+            5 - 3.3v = 20mA x Ω<br>
+            1.7v = 20mA x Ω<br>
+            1.7v / 20mA = Ω<br>
+            <br>
+            85 = Ω
+          </p>
+        </div>
+      </div>
+      <div>
+        <div>
+          <p>
+            <strong>Button:</strong>The resistor used towards the button is 10kΩ. This is in order to keep the buttons state = 0 when not pressed.
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+      <div class="section">
+      <h2>Final Circuit</h2>
+      <img src="images/IMG_1345.jpeg">
+      <div class="caption">Built circuit made as shown on the schematic.</div>
+      </div>
+
+    <div class="section">
+      <h2>Code</h2>
+      <pre>
+        <code>
+          //The analog PWM pin the first (red) LED is attached to
+          const int led = 9;
+
+          //The analog PWM pin the second (blue) LED is attached to
+          const int led2 = 10;
+
+          //The analog PWM pin the third (yellow) LED is attached to
+          const int led3 = 11;
+
+          //The pin the button is attached to
+          const int buttonPin = 2;
+
+          // Initializing the state of the button
+          int buttonState = 0;
+
+
+          void setup() {
+
+            //Initializing all LED pins as outputs
+            pinMode(led, OUTPUT);
+            pinMode(led2, OUTPUT);
+            pinMode(led3, OUTPUT);
+
+            //Initializing the button pin as an input
+            pinMode(buttonPin, INPUT);
+          }
+
+          void loop() {
+
+            //Section to be executed when the button is pressed
+            if (buttonState == HIGH) {
+
+              //To loop through each of the pins one at a time
+              for (int j = 9; j <= 11; j++) {
+
+                //Loop to change the brightness one point at a time going from 0 -> 255
+                for (int i = 0; i < 255; i++) {
+
+                //Writes the value of i to the brightness of the pin for a fade in
+                analogWrite(j, i);
+
+                //Adds a delay of .1 ms between brightness changes
+                delay(10);
+                }
+
+                //Loop to change the brightness one point at a time going from the
+                // end of the last loop (255 -> 0)
+                for (int i = 255; i > 0; i--) {
+
+                //Writes the value of i as the brightness state of the LED
+                analogWrite(j, i);
+
+                //Adds a delay of .1 ms between brightness changes
+                delay(10);
+                }
+
+                //Turns the LED off once the cycle has completed
+                digitalWrite(j, LOW);
+
+              }
+
+            //Logic for when the button is not pressed
+            } else {
+
+              //Turns all of the LEDs off when the button is not pressed
+              digitalWrite(led, LOW);
+              digitalWrite(led2, LOW);
+              digitalWrite(led3, LOW);
+            }
+          }
+        </code>
+      </pre>
+    </div>
+
+    <div class="section">
+      <h2>Circuit Function</h2>
+      <img src="/images/tinywow_IMG_1351_85008957.gif" />
+
+      <div class="caption">
+        The function of the completed circuit that has three LEDs fading in and out one at a time when input from a button is detected.
+      </div>
+    </div>
+
+    <div>
+      <h2>Questions</h2>
+      <div class="question">
+        <strong>Q1:</strong>Draw a chart where the X axis is time and the Y axis is voltage. Draw 3 lines representing the voltage across an LED with analogWrite(led, 64), analogWrite(led, 128), and analogWrite(led, 255).
+        <div>
+          <img src="images/Screenshot 2025-10-10 at 11.14.34 PM.png">
+
+        </div>
+      </div>
+
+      <div class="question">
+        <strong>Q2:</strong> Given your schematic, circuit, and firmware, assuming the only thing that draws current is your LEDs, how long would your circuit run if powered by a 1200 mAh battery?
+        <br>
+        <strong>A:</strong>
+        <p>Battery = 1200mAh, I = 20mA, 3LEDs<br>
+        Hours = 1200mAh / 20mA x 3<br>
+        Hours = 20 <br>
+          <br>
+        A 1200mAh battery could power my circuit for 20 hours total.
+        </p>
+      </div>
+
+      <div class="question">
+        <strong>Q3:</strong> Measure and record the actual voltage across one of your LEDs when it's on. How does this compare to the theoretical forward voltage for your LED color?
+        <br>
+        <strong>A:</strong> The actual voltage across my red LED when it was on was around 1.8 V. This is a bit less than the theoretical forward voltage listed on the LED's spec sheet.
+      </div>
+      <div class="question">
+      </div>
     </div>
   </body>
 </html>
