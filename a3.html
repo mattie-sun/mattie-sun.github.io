@@ -1,10 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+    <title>Assignment 3: Input Output</title>
 </head>
+
 <body>
-$END$
+<link href="style.css" rel="stylesheet" type="text/css" />
+<h1>Assignment 3: Input Output</h1>
+<div class="header">
+  <p>The goal of this assignment was to build and code a circuit a sensor input that uses either a photoresistor or a thermistor in a voltage divider to change the state of an output device.</p>
+</div>
+
+
+<div class="section">
+  <h2>Schematic</h2>
+  <img src="images/hw3Schematic.png">
+  <div class="caption">Circuit schematic connecting pins 9 - 11 to  their corresponding LEDs and to the switch. Each individual circuit has a 5v power source and its necessary who's value is calculated below. </div>
+</div>
+
+<div class="section">
+  <h2>Voltage Calculations</h2>
+  <div class="flex-container">
+    <div class="column">
+      <p>
+        <strong>Green & Red LEDs:</strong><br>
+        V = 5, Vdrop = 1.8, I = 20mA<br>
+        5 - 1.8v = 20mA x Ω<br>
+        3.2v = 20mA x Ω<br>
+        3.2v / 20mA = Ω<br>
+        <br>
+        160 = Ω
+      </p>
+    </div>
+
+    <div class="column">
+      <p>
+        <strong>Blue LED:</strong><br>
+        V = 5, Vdrop = 3.3, I = 20mA<br>
+        5 - 3.3v = 20mA x Ω<br>
+        1.7v = 20mA x Ω<br>
+        1.7v / 20mA = Ω<br>
+        <br>
+        85 = Ω
+      </p>
+    </div>
+    <div class="column">
+      <p>
+        <strong>R2 Range:</strong><br>
+        R1 range = 1kΩ - 100kΩ, R2 = 220Ω, Vin = 5 <br>
+        5 x (10k / 220 + 10k) = 0.11v<br>
+        5 x (1k / 220 + 1k) = 0.90v<br><br>
+        Vout Range: 0.11v - 0.90v. <br>
+      </p>
+    </div>
+  </div>
+  <p>A 220 Ω resistor was used as R2 for the voltage divider in order to make the photoresistor more sensitive to changes in light.</p>
+</div>
+
+
+<div class="section">
+  <h2>Final Circuit</h2>
+  <img src="images/tinywow_IMG_1396_85225152.jpg">
+  <div class="caption">Built circuit made as shown on the schematic and responding to changes in light input. </div>
+</div>
+
+<div class="section">
+  <h2>Code</h2>
+  <pre>
+        <code>
+          // select the input pin for the potentiometer
+          int sensorPin = A0;
+          // creating a variable for analog pin 11 (Red)
+          int led1 = 11;
+          // creating a variable for analog pin 10 (Green)
+          int led2 = 10;
+          // creating a variable for analog pin 9 (Blue)
+          int led3 = 9;
+          // variable to store the value coming from the sensor
+          int sensorValue = 0;
+          // placeholder value for mapped value from sensor
+          int mappedVal = 0;
+
+          void setup() {
+            // declare the each led pin as an OUTPUT 11 - 9
+            pinMode(led1, OUTPUT);
+            pinMode(led2, OUTPUT);
+            pinMode(led3, OUTPUT);
+
+            // start writing to the console
+            Serial.begin(9600);
+          }
+
+          void loop() {
+            // read the value from the sensor
+            sensorValue = analogRead(sensorPin);
+            //Print the value to the console
+            Serial.println(sensorValue);
+            //Map the range of values form the resistor to the range of the LED
+            mappedVal = map(sensorValue, 0, 200, 0, 255);
+
+            // turn the ledPins on in relation to the sensorValue depending on how dark it is
+            if (sensorValue > 50) {
+              // change the combination of LED color based on analog value
+              analogWrite(led1, mappedVal);
+              analogWrite(led2, constrain(mappedVal, 0 ,255));
+              analogWrite(led3, constrain(mappedVal, 0 ,255));
+            } else {
+              // change the combination once the value is below 50
+              digitalWrite(led3, LOW);
+              analogWrite(led2, constrain(mappedVal, 0 ,255));
+              analogWrite(led1, constrain(mappedVal, 0 ,255));
+            }
+          }
+        </code>
+      </pre>
+</div>
+
+<div class="section">
+  <h2>Circuit Function</h2>
+  <img src="images/tinywow_IMG_1400_85224469.gif"/>
+  <div class="caption">
+    <p>The circuit functioning as per the spec and the code where the LED changes color based on the value of the photoresistor.</p>
+  </div>
+</div>
+
+<div>
+  <h2>Questions</h2>
+  <div class="question">
+    <strong>Q1:</strong>In your voltage divider, can the variable resistor be either R1 or R2 or does it need to be one or the other? Justify your answer with example calculations. <br>
+    <strong>A:</strong> The variable resistor can be used as either R1 or R2, the only change would be the inversion of the range of voltage.
+
+      <div class="flex-container">
+        <div class="column">
+          Variable resistor as R1:
+          <p><br>
+            R1 = PR 1k - 10k, R2 = 220, Vin = 5 <br>
+            <br>
+            5 x (10k / 220 + 10k) = 0.11v <- Lower range
+            <br><br>
+            5 x (1k / 220 + 1k) = 0.90v <- Upper range
+            <br><br>
+            Range: 0.11v - 0.90v
+          </p>
+        </div>
+
+        <div class="column">
+          Variable resistor as R2:
+          <p><br>
+            R1 = 220, R2 = PR 1k - 10k, Vin = 5 <br>
+            <br>
+            5 x (220 / 10k + 220) = 4.89v <- Upper range
+            <br><br>
+            5 x (220 / 1k + 220) = 4.10v <- Lower range
+            <br><br>
+            Range: 4.10v - 4.89v
+          </p>
+        </div>
+      </div>
+  </div>
+
+  <div class="question">
+    <strong>Q2:</strong> Draw a graph where the x-axis is time and the y-axis is voltage. Plot the voltage at V-measure of your voltage divider of your shared gif.
+      <img src="images/Group 4.png">
+  </div>
+
+  <div class="question">
+    <strong>Q3:</strong> AnalogWrite and analogRead are respectively 8-bit and 10-bit values.
+    Imagine you had 10-bit PWM and a 16-bit analog-to-digital converter instead.
+    How would this change your map() code? Explain your answer.
+    <br>
+    <strong>A:</strong>The mapping values would change from 0 - 255(2^8) to 0 - 1023(2^10) for analogWrite and from 0 - 1023(2^10) to 0 - 65535(10^16) for analogRead. This would change the map finction in my code to: <br>
+    map(sensorValue, 0, 1023, 0, 65535);
+  </div>
+</div>
 </body>
 </html>
