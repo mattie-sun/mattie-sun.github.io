@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+    <title>Assignment 4: Libraries!</title>
+</head>
+
+<body>
+<link href="style.css" rel="stylesheet" type="text/css" />
+<h1>Assignment 4: Libraries!</h1>
+<div class="header">
+    <p>The goal of this assignment was to build and code a circuit using parts that require at least 2 libraries.</p>
+</div>
+
+
+<div class="section">
+    <h2>Schematic</h2>
+    <img src="images/Ass4%20schematic.png">
+    <div class="caption"> </div>
+</div>
+
+<div class="section">
+    <h2>Final Circuit</h2>
+    <img src="images/IMG_1527.jpeg">
+    <div class="caption">Built circuit made as shown on the schematic and responding to changes in distance. </div>
+</div>
+
+<div class="section">
+    <h2>Code</h2>
+    <pre>
+        <code>
+            //Importing both libraries, HCSR04.h for the ultrasonic sensor and Servo.h for the servo motor
+            #include &lt;HCSR04.h&gt;
+            #include &lt;Servo.h&gt;
+
+            // Initialize sensor that uses digital pins 13 and 12.
+            UltraSonicDistanceSensor distanceSensor(13, 12);
+
+            //Creates a servo object with the library
+            Servo myservo;
+
+            //initializing a placeholder variable as servo position
+            int pos = 0;
+
+            //initializing a placeholder variable as distance read from ultrasonic sensor
+            int dist = 0;
+
+            //initializing a variable as the delay
+            int del = 0;
+
+            void setup () {
+                //start printing values read from the sensor to the serial monitor
+                Serial.begin(9600);
+
+                //designating pin 9 as the pwm pin connected to the motor
+                myservo.attach(9);
+            }
+
+            void loop () {
+                //set the latest value read from the sensor to distance
+                dist = distanceSensor.measureDistanceCm();
+
+                //print that value to the serial monitor
+                Serial.println(dist);
+
+                //call the function takeMeasure with the input value of distance and sends back a delay value based on the dist value
+                del = takeMeasure(dist);
+
+                //sweeps the servo left with the delay value as input
+                sweepLeft(del);
+
+                //takes the distance again from the sensor
+                dist = distanceSensor.measureDistanceCm();
+
+                //prints that value to the serial monitor
+                Serial.println(dist);
+
+                //evaluates the distance read and returns a delay value
+                del = takeMeasure(dist);
+
+                //sweeps the servo motor right
+                sweepRight(del);
+            }
+
+            //function that evaluates the distance read by the sensor and returns a delay value
+            //based on the input.
+            int takeMeasure(int dist) {
+
+                //if the distance read is <10 cm set the delay on one round of sweeping to 1
+                if (dist <= 10) {
+                    del = 1;
+
+                //if the distance read is in between 11 and 35cm inclusive, set the delay on one round of sweeping to 5
+                } else if (dist >= 11 && dist <= 35) {
+                    del = 5;
+
+                //if the distance read is anything else, set the delay on one round of sweeping to 15
+                } else {
+                    del = 15;
+                }
+
+                //return the value from the logic tree.
+                return del;
+            }
+
+            //function sweeps the servo motor 180 degrees to the left with the function input as the delay value
+            void sweepLeft(int del) {
+
+                //loops through all 180 degrees
+                for (pos = 0; pos <= 180; pos += 1) {
+
+                    //writes the loop position to the servo
+                    myservo.write(pos);
+
+                    //the delay between writing each value to the motor
+                    delay(del);
+                }
+            }
+
+            //function sweeps the servo motor 180 degrees to the right with the function input as the delay value
+            void sweepRight(int del) {
+
+                //loops through all 180 degrees
+                for (pos = 180; pos >= 0; pos -= 1) {
+
+                    //writes the loop position to the servo
+                    myservo.write(pos);
+
+                    //the delay between writing each value to the motor
+                    delay(del);
+                }
+            }
+        </code>
+      </pre>
+    <div class="caption">
+        <p>*Parts of this code are from examples provided by the libraries. Specifically from HSR04 'simple' and Servo 'sweep'</p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Value Justification</h2>
+    <div class="flex-container">
+        <div class="column">
+            <p>
+                The sensor values used in the logic tree were based on what I could easily accomplish in my given setting. 10cm was about the edge of the table I
+                was sitting at, and 35cm was how far I could hold my hand away from the sensor without getting up. Anything greater than that was achieved by simply moving my hand away.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Circuit Function</h2>
+    <img src="images/tinywow_IMG_1526_85472167.gif"/>
+    <div class="caption">
+        <p>The circuit functioning as per the spec and code where if the distance detected by the sensor is < 10cm,
+            the servo has a delay of 1ms, if between 11 and 35cm, the delay is 5ms, and otherwise is 15ms.</p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Questions</h2>
+    <div class="question">
+        <strong>Q1:</strong> Say you are using a servo motor you attach to pin 9. In your loop() you have the following code:<br>
+        void loop() {<br>
+        for (pos = 0; pos <= 180; pos += 1) {<br>
+        myservo.write(pos);<br>
+        delay(100);<br>
+            }<br>
+        }<br> <br>
+        Draw a graph with the x-axis as time and the y-axis as voltage at pin 9 with respect to ground.
+
+        <img src="images/Group 6.png">
+    </div>
+
+    <div class="question">
+        <strong>Q3:</strong>Your input device is slightly broken, leading it to give us an erroneous reading 1% of the time. How can we address this? Answer in (pseudo)code.<br>
+        <strong>A:</strong> To address this errored reading that is causing an outlier in our data, we would have to set a range of values as the bounds for our expected outputs. The pseudocode for this would look like:<br>
+        for each sensor value (<br>
+        if value > range * last reading or < -range * last reading //falls outside of the set range<br>
+            set value = last reading<br>
+        )<br>
+    </div>
+
+    <div class="question">
+        <strong>Q2:</strong> Your input device is slightly noisy, leading the measurement to randomly deviate from the true measurement up or down by 10%.
+        How can we address this? Answer in (pseudo)code.<br>
+        <strong>A:</strong> This constant noisy input would require 'smoothing'. To do this, we'd have to take the average of a few raw readings from the
+        sensor and average them out constantly. The pseudocode version of this would look like: <br>
+        loop a number of times (<br>
+        current value from the sensor + past values<br>
+        delay if needed
+        )<br>
+        / total number of values<br>
+        = final sensor value
+    </div>
+</div>
+</body>
+</html>
