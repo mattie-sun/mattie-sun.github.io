@@ -1,10 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+    <title>Assignment 5: High(er) Voltage!</title>
 </head>
+
 <body>
-$END$
+<link href="style.css" rel="stylesheet" type="text/css" />
+<h1>Assignment 5: High(er) Voltage!</h1>
+<div class="header">
+    <p>The goal of this assignment was to build and code a circuit using parts that require the use of a transistor to control load power separate from logic power, a high-load output device and an input sensor using a library.</p>
+</div>
+
+<div class="section">
+    <h2>Schematic</h2>
+    <img src="images/Group 8.png">
+    <div class="caption">
+        <p></p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Final Circuit</h2>
+    <img src="images/IMG_1527.jpeg">
+    <div class="caption">Built circuit made as shown on the schematic using the ultrasonic sensor, led strip, and capacitor components. </div>
+</div>
+
+<div class="section">
+    <h2>Code</h2>
+    <pre>
+        <code>
+            //Importing both libraries, HCSR04.h for the ultrasonic sensor and Servo.h for the servo motor
+            #include &lt;HCSR04.h&gt;
+
+            //Initialize sensor that uses digital pins 13 and 12.
+            UltraSonicDistanceSensor distanceSensor(13, 12);
+
+            //initializing brightness value
+            int brightness = 0;
+
+            //setting the fade amount to 5
+            int fadeAmount = 5;
+
+            //initializing a placeholder variable as distance read from ultrasonic sensor
+            int dist = 0;
+
+            void setup () {
+                //start printing values read from the sensor to the serial monitor
+                Serial.begin(9600);
+
+                //designating pin 9 as the pwm pin connected to the motor and drives higher voltage power
+                pinMode(9, OUTPUT);
+            }
+
+            void loop () {
+                //set the latest value read from the sensor to distance
+                dist = distanceSensor.measureDistanceCm();
+
+                //wait 10ms before writing the next measurement from sensor
+                delay(10);
+
+                //print that value to the serial monitor
+                Serial.println(dist);
+
+                //if the distance is less than 50cm and no -1 start fading
+                if (dist < 50 && dist != -1) {
+
+                    //write the brightness value to the leds
+                    analogWrite(9, brightness);
+
+                    //add the fade value (5) to the brightness
+                    brightness = brightness + fadeAmount;
+
+                //if the brightness is in between 0 and 255 reset the direction of the fading
+                if (brightness <= 0 || brightness >= 255) {
+
+                    //do so by making it negative
+                    fadeAmount = -fadeAmount;
+                }
+                //wait 30ms
+                delay(30);
+
+                //if object not within this range turn LEDs off
+                } else {
+                    analogWrite(9, LOW);
+                }
+            }
+        </code>
+      </pre>
+    <div class="caption">
+        <p>*Parts of this code are from the blink example provided by the arduino IDE.</p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Circuit Function</h2>
+    <img src="images/tinywow_IMG_1605_85793608.gif"/>
+    <div class="caption">
+        <p>The circuit functioning as per the spec and code where if the distance detected by the sensor is < 50cm,
+           the LEDs start fading. Otherwise, they are off. </p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Questions</h2>
+    <div class="question">
+        <strong>Q1:</strong> What is the absolute maximum amount of current between pins 2 and 3?<br>
+        <p><strong>A:</strong> According to the datasheet, it is 37.2 A</p>
+    </div>
+
+    <div class="question">
+        <strong>Q2:</strong> Draw a schematic for a circuit with using at least your arduino, a DC motor, a flyback diode, and capacitors between power and ground. Find parts with datasheets you could use for each of these schematic components.
+        <img src="images/Group 11.png">
+        <div>
+            <p><strong>Components:</strong> <br>
+            <strong>Arduino: </strong> https://epow0.org/~amki/car_kit/Datasheet/ELEGOO%20UNO%20R3%20Board.pdf<br>
+            <strong>DC Motor: </strong> https://www.handsontec.com/dataspecs/motor_fan/130-Motor.pdf<br>
+            <strong>Capacitor: </strong> https://www.mouser.com/catalog/specsheets/Murata%20c83e3.pdf?srsltid=AfmBOooNJ7WY9XPYevfm2b5SU6ExZ4HTaou0mRPJ6zNPlxG5-UdeiJc3<br>
+            <strong>N-MOSFET transistor: </strong> https://www.diodes.com/assets/Datasheets/DMT6009LCT.pdf<br>
+            <strong>Flyback Diode: </strong> https://www.digikey.com/htmldatasheets/production/1914435/0/0/1/1n4001-1n4007.html?gclsrc=aw.ds&gad_source=1&gad_campaignid=120565755&gbraid=0AAAAADrbLlgH1PER2dCJ42pgbYO_j8x6U&gclid=Cj0KCQiAq7HIBhDoARIsAOATDxBk9c54EVlCh7mQPNEfh7OAWypO_I4Oe5tMLgB0fMFQXpzfZh_wLBwaAlaXEALw_wcB<br>
+            </p>
+        </div>
+    </div>
+
+    <div class="question">
+        <strong>Q3:</strong> Draw a schematic using at least your arduino, this chip, and two motors. Write (pseudo) code that shows how you would move the motors both forward, both back, then one forward one back, and one back then forward.
+        <img src="images/Group 10.png">
+        <p><strong>Pseudocode:</strong><br></p>
+        <pre>
+            <code>
+                //set up pins 8, 9, 10, 11 as outputs
+
+                // Turn both forward
+                digitalWrite(11, HIGH);
+                digitalWrite(10, LOW);
+                digitalWrite(9, HIGH);
+                digitalWrite(8, LOW);
+
+                //turn both backward
+                digitalWrite(11, LOW);
+                digitalWrite(10, HIGH);
+                digitalWrite(9, LOW);
+                digitalWrite(8, HIGH);
+
+                //one forward one back
+                digitalWrite(11, HIGH);
+                digitalWrite(10, LOW);
+                digitalWrite(9, LOW);
+                digitalWrite(8, HIGH);
+
+                //one back one forward
+                digitalWrite(11, LOW);
+                digitalWrite(10, HIGH);
+                digitalWrite(9, HIGH);
+                digitalWrite(8, LOW);
+            </code>
+        </pre>
+    </div>
+</div>
 </body>
 </html>
