@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+  <title>Assignment 6: Talking to the web!</title>
+</head>
+
+<body>
+<link href="style.css" rel="stylesheet" type="text/css" />
+<h1>Assignment 6: Talking to the web!</h1>
+<div class="header">
+  <p>The goal of this assignment was to create a webpage that interacts with an arduino with a minimum of two input devices and one output device. Both the circuit and the webpage have to update based on input from the other.</p>
+</div>
+
+<div class="section">
+  <h2>Schematic</h2>
+  <img src="images/Group 12.png">
+  <div class="caption">
+    <p>Schematic uses 2 LEDs and 2 buttons.</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Final Circuit</h2>
+  <img src="images/IMG_0043.jpeg">
+  <div class="caption">Built circuit made as shown on the schematic using the two buttons and the two LEDs. </div>
+</div>
+
+<div class="section">
+  <h2>Arduino Code</h2>
+  <pre>
+        <code>
+            //Initializing global variables for hardware
+            const int BUTTON1 = 2;
+            const int BUTTON2 = 3;
+            const int LED_RED = 10;
+            const int LED_GREEN = 11;
+
+            //Placeholder for virtual input
+            int click = 0;
+
+
+            void setup() {
+            //Start the serial monitor
+              Serial.begin(9600);
+
+            //initialize button pins as inputs
+              pinMode(BUTTON1, INPUT);
+              pinMode(BUTTON2, INPUT);
+
+            //initialize LED pins as outputs
+              pinMode(LED_RED, OUTPUT);
+              pinMode(LED_GREEN, OUTPUT);
+
+            //turn red led on and green led on
+              digitalWrite(LED_RED, HIGH);
+              digitalWrite(LED_GREEN, LOW);
+            }
+
+            void loop() {
+            //variables to hold inputs from buttons 1 & 2
+              int button1 = digitalRead(BUTTON1);
+              int button2 = digitalRead(BUTTON2);
+
+            //read from the serial port of there's something available
+              if (Serial.available()) {
+            //assign incoming as a char
+                char in = Serial.read();
+
+            //If the incoming value is 1, assign to click variable
+                if (in == '1') {
+                  click = 1 ;
+
+            //otherwise assign value 0.
+                } else if (in == '0') {
+                  click = 0;
+
+                }
+              }
+
+            //if all three buttons are clicked turn the green LED on to HIGH
+            //And red to LOW
+                if (button1 == HIGH && button2 == HIGH && click == 1) {
+                digitalWrite(LED_GREEN, HIGH);
+                digitalWrite(LED_RED, LOW);
+
+            //if only a few buttons are pressed or none, red LED stays on HIGH
+            //green on low
+              } else {
+                digitalWrite(LED_GREEN, LOW);
+                digitalWrite(LED_RED, HIGH);
+              }
+
+            //write the values of the buttons & virtual button to serial monitor
+              Serial.print(button1);
+              Serial.print(",");
+              Serial.print(button2);
+              Serial.print(",");
+              Serial.println(click);
+
+            //wait for 30ms
+              delay(30);
+            }
+
+        </code>
+      </pre>
+</div>
+
+<div class="section">
+    <h2>P5 Code</h2>
+    <pre>
+        <code>
+            //initializing data relay rate to arduino
+            const BAUD_RATE = 9600;
+            //setting up port
+            let port;
+            //placeholder for click value
+            let virtualButtonState = 0;
+
+
+            function setup() {
+            //builds canvas the height and width of the window
+              createCanvas(windowWidth, windowHeight);
+            //starting serial connection with the arduino
+              setupSerial();
+            // picking the size and placement of the text on the interface
+              textSize(40);
+              textAlign(CENTER, CENTER);
+            }
+
+            function draw() {
+            //if port isn't connected, exit the function
+              if (!checkPort()) return;
+            //read the incoming data until new line
+              let incoming = port.readUntil("\n").trim();
+            //if there is no data, exit function
+              if (!incoming) return;
+            //split the incoming button data into two inputs
+              let parts = incoming.split(",");
+              let button1 = Number(parts[0]);
+              let button2 = Number(parts[1]);
+
+            //make the background black
+              background("black");
+            //constantly write the state of the buttons to the middle of the screen
+              text(`Button1: ${button1}   Button2: ${button2}   Click Me!: ${virtualButtonState}`,
+                   width/2, height/2);
+
+            //check the click state of the virtual button and send it to arduino
+              if (virtualButtonState == 1) {
+                port.write("1");
+              } else {
+                port.write("0");
+              }
+            }
+
+            //function sets virtual button state to 1 when mouse click is detected
+            function mousePressed() {
+              virtualButtonState = 1;
+            }
+
+            //function sets virtual button state to 0 when mouse click is detected
+            function mouseReleased() {
+              virtualButtonState = 0;
+            }
+
+        </code>
+      </pre>
+    <div class="caption">
+        <p>*Parts of this code are from the button P5 example provided to us in class.</p>
+    </div>
+</div>
+
+
+
+<div class="section">
+  <h2>Circuit Function</h2>
+  <img src="images/tinywow_IMG_0046_86025761.gif"/>
+  <div class="caption">
+    <p>The circuit functioning as per the spec and code where if all buttons are pressed, the green LED turns on otherwise the red LED is on.</p>
+  </div>
+</div>
+</body>
+</html>
