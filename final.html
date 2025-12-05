@@ -1,10 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+    <title>Final Project Documentation</title>
 </head>
+
 <body>
-$END$
+<link href="style.css" rel="stylesheet" type="text/css" />
+<h1>Final Project Documentation</h1>
+<div class="header">
+    <p>This page contains the documentation of my final project, Groovlet. This concept was to have a desktop 'status player' that you could interact with to change the volume or song playing-
+        without having to sift through open tabs on your computer or access your laptop to do so. It's an aesthetic way to adjust your music without getting distracted by it. </p>
+</div>
+
+<div class="section">
+    <div><h2>Technical Documentation<br></h2></div>
+
+    <h3>Schematic</h3>
+    <img src="images/Group 13.png">
+    <div class="caption">
+        <p>Schematic uses 3 pushbuttons, a potentiometer, the LCD screen and the LED strip lights.</p>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Final Circuit</h3>
+    <img src="images/IMG_0176.jpeg">
+    <div class="caption">Built circuit made as shown on the schematic having all 3 buttons and the potentiometer connected to their respective 5v, ground, and pins on the arduino. The LEDs are inlaid into the slit on box and connect out of the port directly to a power source. </div>
+</div>
+
+<div class="section">
+    <h3>Arduino Code</h3>
+    <pre>
+        <code>
+            // including a library for the LCD
+            #include &lt;LiquidCrystal.h&gt;
+
+            // LCD pin setup
+            const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+            //lcd setup itself creating object
+            LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+            // button variable assignment
+            const int play = 8;
+            const int next = 9;
+            const int prev = 10;
+
+            // potentiometer var assignment
+            const int potPin = A0;
+            // placeholder for recieved volume value
+            int lastVolume = -1;
+            //placeholder for incoming song/player info
+            String incoming = "";
+
+            // centering the text on the LCD screen helper method
+            void printCenter(int row, String text) {
+              // takes the length of the text input
+              int len = text.length();
+              // initalizing 'padding' for each side of text
+              int padding = 0;
+              //if text longer than 16 no padding is needed, otherwise calculate how much space
+              if (len < 16) padding = (16 - len) / 2;
+
+              //clears target row
+              lcd.setCursor(0, row);
+              lcd.print("                ");
+
+              //prints text from 'padding' location
+              lcd.setCursor(padding, row);
+              lcd.print(text);
+            }
+
+            void setup() {
+
+              //initalizing the serial monitor
+              Serial.begin(9600);
+              //setting the buttons as inputs
+              pinMode(play, INPUT);
+              pinMode(next, INPUT);
+              pinMode(prev, INPUT);
+
+              // initalize the lcd screen
+              lcd.begin(16, 2);
+              // print starting message to the lcd screen
+              printCenter(0, "Media Control");
+            }
+
+            void loop() {
+              //take readings from each of the buttons
+              int pPlay = digitalRead(play);
+              int pNext = digitalRead(next);
+              int pPrev = digitalRead(prev);
+
+              // if play button is pressed, send 'play' in message to python script
+              //and print play/pause to LCD screen w/ center function
+              if (pPlay == HIGH) {
+                Serial.println("PLAY");
+                lcd.clear();
+                printCenter(0, "Play/Pause");
+                delay(300);
+              }
+
+              // if next button is pressed, send 'next' in message to python script
+              //and print next track to LCD screen w/ center function
+              if (pNext == HIGH) {
+                Serial.println("NEXT");
+                lcd.clear();
+                printCenter(0, "Next Track");
+                delay(300);
+              }
+
+              // if prev button is pressed, send 'prev' in message to python script
+              //and print previous to LCD screen w/ center function
+              if (pPrev == HIGH) {
+                Serial.println("PREV");
+                lcd.clear();
+                printCenter(0, "Previous");
+                delay(300);
+              }
+
+              // for potentiometer
+              // read analog value from pin
+              int potValue = analogRead(potPin);
+              // map the value from pot from 0 - 1023 to 0 - 100
+              int volumeLevel = map(potValue, 0, 1023, 0, 100);
+              // send volume change if greater than 2
+              if (abs(volumeLevel - lastVolume) > 2) {
+                Serial.print("VOL|");
+                Serial.println(volumeLevel);
+                lastVolume = volumeLevel;
+              }
+
+
+
+              // if input from the serial monitor available, enter loop to extract song info
+              while (Serial.available()) {
+                //read message character by character
+                char c = Serial.read();
+
+                //once line is ended, start splitting up each piece of information from message
+                // collects song and artist, otherwise add character to final string
+                if (c == '\n') {
+                  if (incoming.startsWith("INFO|")) {
+                    int firstSep = incoming.indexOf('|', 5);
+                    int secondSep = incoming.indexOf('|', firstSep + 1);
+                    String song = incoming.substring(5, firstSep);
+                    String artist = incoming.substring(firstSep + 1, secondSep);
+
+                    // write this info to the LCD screen
+                    lcd.clear();
+                    printCenter(0, song);
+                    printCenter(1, artist);
+                  }
+
+                  // resetting placeholder string after inoming info is read
+                  incoming = "";
+                } else {
+                  // adding read char to final string
+                  incoming += c;
+                }
+              }
+
+              // delay to prevent too many reads
+              delay(50);
+            }
+        </code>
+      </pre>
+</div>
+
+<div class="section">
+    <h3>Python Code</h3>
+    <pre>
+        <code>
+            # importing lobraries to connect mac function (key input, backend script, etc.)
+            import subprocess
+            import serial
+            import time
+            from pynput.keyboard import Key, Controller
+
+            #
+            keyboard = Controller()
+            # connecting to arduino port
+            ser = serial.Serial('/dev/tty.usbmodem101', 9600)
+            # wait .2 seconds
+            time.sleep(2)
+            # keep track of play status from mac
+            is_playing = False
+            # script for backend retreival of player/ song info
+            script = '''
+            if application "Spotify" is running then
+                tell application "Spotify"
+                    if player state is playing or player state is paused then
+                        return name of current track & "||" & artist of current track & "||" & player state
+                    end if
+                end tell
+            end if
+
+            if application "Music" is running then
+                tell application "Music"
+                    if player state is playing or player state is paused then
+                        return name of current track & "||" & artist of current track & "||" & player state
+                    end if
+                end tell
+            end if
+
+            return "NO SONG||NO ARTIST||STOP"
+            '''
+
+            #------------------ HELPER FUNCTIONS -----------------------------------#
+
+            # helper function to retreive and process song data
+            def get_song_info():
+                # run backend script to retreive song info, format it & save to local var
+                result = subprocess.check_output(["osascript", "-e", script]).decode().strip()
+                # split info based on seperator '||'
+                parts = result.split("||")
+
+                # run a check on if all song data is accounted for, otherwise send fallback data
+                if len(parts) != 3:
+                    return {"name": "NO SONG", "artist": "NO ARTIST", "state": "STOP"}
+                return {"name": parts[0], "artist": parts[1], "state": parts[2]}
+
+
+
+            # function to add additional data to song message information (i.e status) for lcd processing.
+            def send_lcd_state(state):
+                # wrinting info to serial monitor & encoding it to be passed in proper formatting
+                ser.write(f"LCD|{state}\n".encode())
+
+
+
+            # helper function to send final formatted info to arduino
+            def send_song_info():
+                # call to helper func, retreive song info & store
+                info = get_song_info()
+                # formatting of song info by name, artist, player state as is interperted by arduino
+                msg = f"INFO|{info['name']}|{info['artist']}|{info['state']}\n"
+                # send final message over serial monitor
+                ser.write(msg.encode())
+
+
+
+            # --------------------------- Main loop ----------------------------- #
+
+            # timer to keep track of timing btw messages to arduino
+            last_song_update = 0
+
+
+            # loop to continuously send/recieve data (no ending unless program is terminated)
+            while True:
+
+
+                # start the timer
+                now = time.time()
+                # send current song info to arduino every 3s, update time info was last sent
+                if now - last_song_update > 3:
+                    send_song_info()
+                    last_song_update = now
+
+
+
+                # check if info available from arduino
+                if ser.in_waiting > 0:
+                    # process for interpertation by python script
+                    line = ser.readline().decode().strip()
+
+                    # check for volume change input in recieved line
+                    if line.startswith("VOL|"):
+                        # take the volume val from the line
+                        vol = int(line.split("|")[1])
+                        # run script to map 0-100 recieved vol to mac vol
+                        subprocess.call(["osascript", "-e", f"set volume output volume {vol}"])
+                        # continue on to rest of loop (vol change does not exit loop)
+                        continue
+
+                    # check for button input from arduino in message
+                    # if play arduino message, press and release pause/play key (F8)
+                    if line == "PLAY":
+                        keyboard.press(Key.media_play_pause)
+                        keyboard.release(Key.media_play_pause)
+
+                    # if next arduino message, press and release skip key (F9)
+                    elif line == "NEXT":
+                        keyboard.press(Key.media_next)
+                        keyboard.release(Key.media_next)
+
+                    # if next arduino message, press and release prev key (F7)
+                    elif line == "PREV":
+                        keyboard.press(Key.media_previous)
+                        keyboard.release(Key.media_previous)
+        </code>
+      </pre>
+    <div class="caption">
+    </div>
+</div>
+
+<div class="section">
+    <h3>Technical Writeup</h3>
+    <p>To implement this project, the following was used:<br><br>
+        <strong>Hardware</strong>
+        <ul>
+            <li> 3 pushbuttons </li>
+            <li> 1 potentiometer </li>
+            <li> LCD screen </li>
+            <li> LED Strip lights </li>
+            <li> Mini breadboard </li>
+            <li> 3 10k resistors </li>
+            <li> 1 2k resistor </li>
+            <li> Arduino </li>
+        </ul><br><br>
+
+        <strong>Libraries</strong>
+        <ul>
+            <li> Liquid Crystal (Arduino)</li>
+            <li> Subprocess </li>
+            <li> Serial </li>
+            <li> Time </li>
+            <li> Pyinput </li>
+        </ul><br><br>
+
+        For the construction of the functional circuit, all three pushbuttons were soldered to mtf wires to allow for their embedding within the box. They were each connected to pins 8, 9, and 10 along
+        with the 10 resistors connected to ground. This is the same setup for the potentiometer minus the 10k resistors, connected to pin A0. All 4 of these input devices are then mounted with hot glue to the holes at the top of the device body.<br><br>
+
+        The LCD screen as an output device is set up as specified by each pin on the component, using digital pins 2, 3, 4, 5, 11, and 12 for transferring information to the LCD. The only notable feature to this setup is the forgoing the use of a potentiometer to adjust contrast
+        instead opting to use a 2k resistor for a fixed, but readable contrast. The LCD screen is then mounted on a 3D printed inset on the front of the body of the device. <br><br>
+
+        The arduino and mini breadboard are stored in the body of the device, hiding wires and keeping all the clutter of the components out of sight. Finally, a small strip of LEDs is stuck to the inside walls of the groove on the front of the device. These LEDs are only connected to a separate power source external
+        to the arduino and thus have a separate cord exiting the device. Finally, one consideration for the physical composition of this project is the size of the device. It is relatively small, requiring the consolidation of the components and the use of a smaller breadboard.<br><br>
+
+        The code implementation uses both python for the connection to the music player on the laptop, and arduino code for the arduino components. Pushbutton/ potentiometer input is collected by the arduino and sent to py script as a string,
+        (ex: "PLAY", "NEXT") which then relate to a keyboard input in the laptop, handled by pyinput.
+        Potentiometer input is mapped to a scale of 0 - 100, and if the change is greater than 2 points, the change is sent to the python script and the volume is adjusted with applescript accordingly.
+    <br>
+        Vice versa with song and playing status information- info is retrieved from mac song player by the python script (using a pre-written apple script) every 3 seconds. This information is stripped to only include the artist and title of the song, and is then formatted as: identifier|information and sent to arduino.
+        The arduino reads this string, breaking up the title and artist info and then printing it to the LCD screen. In order to center the information, the print is done via a function that calculates how many of the 16 LCD spaces can be used as 'padding' and manually skips each of those spaces to then print the word in the center of the screen.
+        <br><br>
+
+        Example Process:<br>
+        Button input is sent to the computer and read as a keypress:<br>
+        PLAY = F8, NEXT = F9...etc.<br><br>
+
+        Song info is collected every 3 seconds and sent to the arduino, processed and printed as:<br>
+        TITLE|Hello|ARTIST|Me -> lcdPrintCenter(“hello”)... <br><br>
+
+        To run this program, upload the arduino code to the device, run the python script on your computer and open any music player you have to start manipulating the music.<br>
+</div>
+<div class="section">
+    <h2>Circuit Function</h2>
+    <strong><a href=https://youtu.be/v8cnbcqHE-8>Link to video</a></strong>
+    <div class="caption">
+        <p>The circuit functioning as per the spec and code where the pushbuttons change the status of the music playing and the potentiometer adjusts the volume. </p>
+    </div>
+</div>
 </body>
 </html>
