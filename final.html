@@ -329,6 +329,9 @@
         The arduino and mini breadboard are stored in the body of the device, hiding wires and keeping all the clutter of the components out of sight. Finally, a small strip of LEDs is stuck to the inside walls of the groove on the front of the device. These LEDs are only connected to a separate power source external
         to the arduino and thus have a separate cord exiting the device. Finally, one consideration for the physical composition of this project is the size of the device. It is relatively small, requiring the consolidation of the components and the use of a smaller breadboard.<br><br>
 
+    <img src="images/Screenshot 2025-12-04 at 6.45.59 PM.png">
+    <div class="caption">The design used for this project created by Olivia Chen.</div>
+
         The code implementation uses both python for the connection to the music player on the laptop, and arduino code for the arduino components. Pushbutton/ potentiometer input is collected by the arduino and sent to py script as a string,
         (ex: "PLAY", "NEXT") which then relate to a keyboard input in the laptop, handled by pyinput.
         Potentiometer input is mapped to a scale of 0 - 100, and if the change is greater than 2 points, the change is sent to the python script and the volume is adjusted with applescript accordingly.
